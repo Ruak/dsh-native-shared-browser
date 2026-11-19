@@ -108,3 +108,24 @@ typed into DevTools.
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## Discover / plugin index
+
+DSH has no central official index: the optional **Discover** tab of the Plugins
+page lists only the index sources a user adds. This repository publishes a
+format-1 index at:
+
+```
+https://raw.githubusercontent.com/Ruak/dsh-native-shared-browser/main/plugin-index.json
+```
+
+To use it:
+
+1. Plugins -> Experimental plugins -> enable **Custom plugin indexes** (the
+   `dsh-experimental-plugin-market-bundle` optional bundle).
+2. Plugins -> **Discover** -> **Index sources** -> **Add index source** and paste
+   the URL above.
+3. Search for `native shared browser` and install the entry.
+
+The GitHub topic `dsh-plugin` is also set, which is the discovery convention
+recommended by the official CONTRIBUTING guide.

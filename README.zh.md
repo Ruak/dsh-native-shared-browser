@@ -49,3 +49,19 @@ Invoke-RestMethod "http://127.0.0.1:56852/plugins/native-shared-browser/results"
 ## License
 
 MIT，见 [LICENSE](LICENSE)。
+
+## 插件索引 / Discover
+
+DSH 没有集中式官方索引：Plugins 页的实验性 **Discover** 标签只列出用户自己添加的索引源。本仓库发布了一个 format-1 索引：
+
+```
+https://raw.githubusercontent.com/Ruak/dsh-native-shared-browser/main/plugin-index.json
+```
+
+使用方法：
+
+1. Plugins → Experimental plugins → 打开 **Custom plugin indexes**（`dsh-experimental-plugin-market-bundle` 可选组合包）；
+2. Plugins → **Discover** → **Index sources** → **Add index source**，粘贴上面的 URL；
+3. 搜索 `原生共享浏览器`（或 `native shared browser`）并安装。
+
+仓库也已设置官方 CONTRIBUTING 推荐的 `dsh-plugin` GitHub topic。

@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "原生共享浏览器",
+    "description": "侧栏里的真实浏览器页面，用户可直接交互，agent 操作同一页面。",
+    "detail": "docs/DETAIL.md"
+  }
+}

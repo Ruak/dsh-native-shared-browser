@@ -1,0 +1,3 @@
+- insert:
+    - id: native-shared-browser
+      name: dsh-native-shared-browser

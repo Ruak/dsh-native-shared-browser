@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Native shared browser",
+    "description": "A native sidebar browser page that the user and the agent can operate together.",
+    "detail": "docs/DETAIL.md"
+  }
+}

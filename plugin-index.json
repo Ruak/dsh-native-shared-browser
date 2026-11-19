@@ -1,0 +1,46 @@
+{
+  "format": 1,
+  "title": {
+    "en": "Ruak's DeepSeek Harness plugins",
+    "zh": "Ruak 的 DeepSeek Harness 插件"
+  },
+  "description": {
+    "en": "Community plugins by Ruak for DeepSeek Harness.",
+    "zh": "Ruak 为 DeepSeek Harness 维护的社区插件。"
+  },
+  "metadata": {},
+  "plugins": [
+    {
+      "name": "dsh-native-shared-browser",
+      "title": {
+        "en": "Native shared browser",
+        "zh": "原生共享浏览器"
+      },
+      "description": {
+        "en": "A native right-sidebar browser tab that the user and the agent operate together.",
+        "zh": "侧栏里的真实浏览器页面，用户可直接交互，agent 操作同一页面。"
+      },
+      "icon": "https://raw.githubusercontent.com/Ruak/dsh-native-shared-browser/main/icon.svg",
+      "author": "Ruak",
+      "homepage": "https://github.com/Ruak/dsh-native-shared-browser",
+      "repository": {
+        "url": "https://github.com/Ruak/dsh-native-shared-browser"
+      },
+      "metadata": {},
+      "versions": [
+        {
+          "version": "1.0.1",
+          "publishTimestamp": 1795074102,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/Ruak/dsh-native-shared-browser",
+            "commit": "5d5b4d98c6670f689a1d814bd387298e0f7461b1"
+          },
+          "engines": {
+            "dsh": ">=0.2.2-rc.3"
+          }
+        }
+      ]
+    }
+  ]
+}

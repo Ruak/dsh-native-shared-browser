@@ -29,12 +29,12 @@
       "metadata": {},
       "versions": [
         {
-          "version": "1.0.1",
-          "publishTimestamp": 1795074102,
+          "version": "1.1.0",
+          "publishTimestamp": 1795243200,
           "source": {
             "type": "git",
             "url": "https://github.com/Ruak/dsh-native-shared-browser",
-            "commit": "5d5b4d98c6670f689a1d814bd387298e0f7461b1"
+            "commit": "207d11d7a9dd8a6f934af96a186e47aa649d367f"
           },
           "engines": {
             "dsh": ">=0.2.2-rc.3"

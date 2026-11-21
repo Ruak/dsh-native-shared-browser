@@ -1,6 +1,6 @@
 {
   "name": "dsh-native-shared-browser",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A native right-sidebar browser tab for DeepSeek Harness that the user and the agent can operate together.",
   "type": "module",
   "license": "MIT",

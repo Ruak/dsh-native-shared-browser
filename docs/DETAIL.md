@@ -9,31 +9,40 @@ The bundle has two halves:
   once on `dom-ready`, and reports readiness on `did-finish-load`. A poller reads
   the Host command queue every 1.2 s, executes commands with
   `webview.executeJavaScript`, and posts the result back.
-- **Host half** (`index.js`) registers a loopback HTTP control queue on the DSH
-  web server: `open`, `command`, `commands`, `result`, `results`, `diag`.
+- **Host half** (`index.js`) keeps the command queue, registers the three routes
+  the page uses (`commands`, `result`, `diag`) behind
+  `ctx.connection.requestRejection`, and registers the
+  `native_shared_browser` tool for the agent.
 
 The page belongs to the user: clicks and typing are native. The agent side is
-plain JavaScript evaluation in the same guest, behind a local unauthenticated
-endpoint, so the security boundary is "local DSH profile" and "page you chose".
+plain JavaScript evaluation in the same guest, reached through an in-process
+tool; the HTTP routes accept only this deployment's authenticated browser, so
+the security boundary is "this DSH profile's own page", not "any local
+process".
 
-## Reference client (Python, UTF-8 safe)
+## Agent tool
 
-```python
-import json
-import urllib.request
+`native_shared_browser` queues one command and waits for the page to report it:
 
-BASE = "http://127.0.0.1:56852/plugins/native-shared-browser"
+| Action | Arguments | Effect |
+| --- | --- | --- |
+| `open` | `url` | Open the shared tab (or navigate it). |
+| `goto` | `url` | Navigate the mounted tab. |
+| `eval` | `js` | Evaluate JavaScript in the page. |
+| `click` | `selector` | Click the first match. |
+| `type` | `selector`, `text` | Write text into the match. |
 
-def submit(command):
-    data = json.dumps(command, ensure_ascii=False).encode("utf-8")
-    request = urllib.request.Request(BASE + "/command", data=data,
-        headers={"content-type": "application/json; charset=utf-8"})
-    return json.loads(urllib.request.urlopen(request).read())["id"]
+`wait_ms` bounds how long the call waits (1 s–40 s, default 15 s). A tab must
+exist first: call `open` once. Commands the page never answers stay queued;
+results are kept in a 200-entry ring.
 
-command_id = submit({"action": "eval", "js": "document.title"})
-with urllib.request.urlopen(BASE + "/results") as response:
-    print(json.loads(response.read()))
-```
+## Route access
+
+All three routes call `ctx.connection.requestRejection({ headers })` before
+doing anything. That applies DSH's Host/Origin fence (DNS-rebinding and
+cross-site defence) and requires the browser credential this deployment minted.
+A missing `connection` service answers `503` instead of leaving the queue open.
+`401` and `403` carry a short reason in the JSON body.
 
 ## Why not the shipped Browser tab?
 

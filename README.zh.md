@@ -16,26 +16,39 @@ DSH 自带右侧栏 Browser 可以原生浏览网页，但 client 插件无法�
 
 ## 快速开始
 
-让 agent 打开页面，或自己调用 Host 队列：
+让 agent 打开页面即可，它调用 `native_shared_browser` 工具：
 
-```powershell
-Invoke-RestMethod "http://127.0.0.1:56852/plugins/native-shared-browser/open?url=https://example.com/"
-```
+- `action: "open"` + `url: "https://example.com/"`：在右侧栏打开**原生共享浏览器**标签；
+- `action: "eval"` + `js: "document.title"`：在同一个页面里执行 JavaScript；
+- `action: "click"` / `action: "type"`：按 CSS 选择器点击或输入；`action: "goto"` 让已挂载的标签导航。
 
-右侧栏会出现一个「原生共享浏览器」标签，页面可直接交互；之后 agent 用命令 API 操作同一页面：
+每次调用都会返回页面自己的执行结果。标签就是一个正常页面，你可以随时自己点击、输入。
 
-```powershell
-$body = @{ action = 'eval'; js = 'document.title' } | ConvertTo-Json
-$id = (Invoke-RestMethod -Method Post -ContentType 'application/json' -Body $body `
-  'http://127.0.0.1:56852/plugins/native-shared-browser/command').id
-Invoke-RestMethod "http://127.0.0.1:56852/plugins/native-shared-browser/results" | ConvertTo-Json -Depth 8
-```
+页面只通过 DSH 同源的两条路由与 Host 通信：
 
-命令包含 `open {url}`、`goto {url}`、`eval {js}`、`click {selector}`、`type {selector, text}`。
+| 方法 | 路径 | 用途 |
+| --- | --- | --- |
+| `GET` | `/plugins/native-shared-browser/commands` | 页面轮询待执行命令。 |
+| `POST` | `/plugins/native-shared-browser/result` | 页面回报一条命令结果。 |
+| `GET` | `/plugins/native-shared-browser/diag` | 运行时信息（Electron 版本、队列长度）。 |
+
+这三条都经过 `ctx.connection.requestRejection`：只接受本 DSH 部署里已认证的浏览器。其它源的网页调用得到 `403`，本机但没有浏览器凭据的调用得到 `401`。
+
+## 命令
+
+| 动作 | 参数 | 效果 |
+| --- | --- | --- |
+| `open` | `url` | 打开共享标签到绝对 http(s) 地址，或让它导航过去。 |
+| `goto` | `url` | 让已挂载的标签导航。 |
+| `eval` | `js` | 以页面自身 origin/session 执行 JavaScript，等同在 DevTools 里输入。 |
+| `click` | `selector` | 点击选择器命中的第一个元素。 |
+| `type` | `selector`、`text` | 聚焦元素、写入值并触发 `input`/`change`。 |
+
+`wait_ms`（1000–40000，默认 15000）表示一次工具调用等待页面回报的时长。
 
 ## 安全与限制
 
-- 控制接口绑定在 DSH 的 loopback 服务器上且**无鉴权**，只适用于本地单用户 Desktop；不要暴露到远程/共享环境。
+- 页面路由由 DSH 自己的请求检查把关：Host/Origin 栅栏 + 本部署的浏览器凭据。没有给 agent 的未认证 HTTP 入口，agent 走进程内工具。
 - `eval`/`type` 拥有所打开页面的权限；不要把标签指向不可信页面，用完关掉标签即可。
 - 命令触发导航时 JS 结果可能超时；把「点击」和「读取结果」拆成两条命令。
 - 自带 Browser 标签上目前没有「共享」按钮；本插件提供自己的标签页。上游提案见 `docs/DETAIL.md`。

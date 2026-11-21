@@ -42,55 +42,47 @@ method above.
 
 ## Quick start
 
-Ask the agent to open a page (or call the Host queue yourself). The command queue
-is served by the DSH web server on the loopback origin:
+Ask the agent to open a page; it calls the `native_shared_browser` tool:
 
-```powershell
-# Windows PowerShell
-Invoke-RestMethod "http://127.0.0.1:56852/plugins/native-shared-browser/open?url=https://example.com/"
-```
+- `action: "open"`, `url: "https://example.com/"` opens the right-sidebar
+  **Native shared browser** tab on that URL.
+- `action: "eval"`, `js: "document.title"` runs JavaScript in that same page.
+- `action: "click"` / `action: "type"` drive a CSS selector; `action: "goto"`
+  navigates the mounted tab.
 
-```bash
-# curl
-curl "http://127.0.0.1:56852/plugins/native-shared-browser/open?url=https://example.com/"
-```
+Every call returns what the page reported. The tab is a normal page: you can
+click and type in it yourself at any time.
 
-A right-sidebar **共享浏览器 / Native shared browser** tab opens on that URL. You
-can click and type in it immediately.
+The page talks to the Host over the DSH origin only:
 
-From then on the agent drives the same page through the command API:
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/plugins/native-shared-browser/commands` | The page polls pending commands. |
+| `POST` | `/plugins/native-shared-browser/result` | The page reports one command result. |
+| `GET` | `/plugins/native-shared-browser/diag` | Runtime facts (Electron version, queue sizes). |
 
-```powershell
-$body = @{ action = 'eval'; js = 'document.title' } | ConvertTo-Json
-$id = (Invoke-RestMethod -Method Post -ContentType 'application/json' -Body $body `
-  'http://127.0.0.1:56852/plugins/native-shared-browser/command').id
-Invoke-RestMethod "http://127.0.0.1:56852/plugins/native-shared-browser/results" |
-  ConvertTo-Json -Depth 8
-```
-
-Prefer Python or another UTF-8-safe client when the JavaScript contains non-ASCII
-text. A small reference client is shown in `docs/DETAIL.md`.
+All three run behind `ctx.connection.requestRejection`, so they accept only
+this DSH deployment's authenticated browser. A page on another origin gets
+`403`; a local client without the browser credential gets `401`.
 
 ## Command API
 
-| Method | Path | Body / query | Purpose |
-| --- | --- | --- | --- |
-| `GET` | `/plugins/native-shared-browser/open` | `?url=` | Enqueue an `open` command; the tab opens on the next poll. |
-| `POST` | `/plugins/native-shared-browser/command` | JSON command | Enqueue one command and return its `id`. |
-| `GET` | `/plugins/native-shared-browser/commands` | — | Read pending commands (the Client polls this). |
-| `POST` | `/plugins/native-shared-browser/result` | `{id, ok, result, error}` | Client reports a command result. |
-| `GET` | `/plugins/native-shared-browser/results` | `?since=` | Read completed results. |
-| `GET` | `/plugins/native-shared-browser/diag` | — | Host runtime facts (Electron version, queue sizes). |
+| Action | Arguments | Effect |
+| --- | --- | --- |
+| `open` | `url` | Open the shared tab on an absolute http(s) URL, or navigate it. |
+| `goto` | `url` | Navigate the mounted tab. |
+| `eval` | `js` | Evaluate JavaScript with the page's own origin/session, as if typed into DevTools. |
+| `click` | `selector` | Click the first element matching the selector. |
+| `type` | `selector`, `text` | Focus the element, set its value and fire `input`/`change`. |
 
-Commands: `open {url}`, `goto {url}`, `eval {js}`, `click {selector}`,
-`type {selector, text}`. `eval` runs with the page's own origin/session, as if
-typed into DevTools.
+`wait_ms` (1 000–40 000, default 15 000) is how long one tool call waits for
+the page to report back.
 
 ## Security and limitations
 
-- The control endpoints are bound to the loopback DSH server and are
-  **unauthenticated**. They are intended for the local single-user Desktop
-  profile, not for shared/remote deployments.
+- The page routes are fenced by DSH's own request check: Host/Origin plus the
+  browser credential of this deployment. There is no unauthenticated agent
+  route — the agent uses the in-process tool instead.
 - `eval`/`type` have the privileges of the page you open. Do not point the shared
   tab at untrusted pages, and revoke by closing the tab when finished.
 - The tab's JS bridge can time out when a command triggers a navigation; send a

@@ -215,6 +215,9 @@ function toolDefinition() {
     name: 'native_shared_browser',
     description:
       'Operate the shared browser tab shown on the right, the page the user can also click. '
+      + 'The tab belongs to the Session that opened it: the first "open" selects that Session so '
+      + 'the right sidebar shows its own panel, and later calls keep driving that panel even when '
+      + 'the user is viewing another Session. '
       + 'Actions: open/goto (url), eval (js), click (selector), type (selector, text). '
       + 'Returns what the page reported for the command. The tab must exist first: call action "open".',
     parameters: {
@@ -247,7 +250,9 @@ function toolDefinition() {
     isConcurrencySafe: () => false,
     async execute(args, exec) {
       const command = buildCommand(args || {});
-      const entry = enqueue(command);
+      const agent = exec && exec.agent;
+      const session = agent && typeof agent.id === 'string' ? agent.id : '';
+      const entry = enqueue({ ...command, session });
       const payload = await waitForResult(
         entry.id,
         waitMsFrom((args || {}).wait_ms),
@@ -257,6 +262,7 @@ function toolDefinition() {
       return {
         action: command.action,
         id: entry.id,
+        session,
         ok: payload.ok === true,
         error: typeof payload.error === 'string' ? payload.error : '',
         url: body && typeof body.url === 'string' ? body.url : '',

@@ -1,6 +1,6 @@
 {
   "name": "dsh-native-shared-browser",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A native right-sidebar browser tab for DeepSeek Harness that the user and the agent can operate together.",
   "type": "module",
   "license": "MIT",
@@ -34,11 +34,15 @@
     "icon.svg"
   ],
   "dsh": {
-    "bundle": { "patch": "./cordis.patch.yml" },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
     "client": {
       "platform": "web",
       "immediately": true,
-      "inject": ["@deepseek-ai/dsh-client-ui-sidebar-right"]
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ]
     }
   }
 }

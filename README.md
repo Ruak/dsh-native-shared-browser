@@ -53,6 +53,14 @@ Ask the agent to open a page; it calls the `native_shared_browser` tool:
 Every call returns what the page reported. The tab is a normal page: you can
 click and type in it yourself at any time.
 
+## Session ownership
+
+Each Session has its own right Sidebar panel, and the tab belongs to the Session
+that opened it: an agent call in another Session opens the browser in **that**
+Session's panel (selecting it if needed), never in whichever Session you happen
+to be viewing. Later `eval`/`click`/`type` calls address that Session's own
+page, which stays alive while you view another one.
+
 The page talks to the Host over the DSH origin only:
 
 | Method | Path | Purpose |

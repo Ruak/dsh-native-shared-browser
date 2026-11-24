@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.0
+
+- The tab now belongs to the **Session that opened it**. DSH keeps one right
+  Sidebar docking surface per Session and `ctx.sidebarRight.openTab` acts on the
+  Session on screen, so an agent call made while the user was viewing another
+  Session used to open the tab in that other panel. Commands now carry the
+  originating Session (`exec.agent.id`), the client selects it before opening,
+  and later `goto`/`eval`/`click`/`type` calls address that Session's own
+  mounted webview — which keeps working while the user views another Session.
+- One webview per Session (hidden Sessions keep theirs mounted through
+  `keepMounted`), per-Session URL memory, and a per-Session browser lease key.
+- A command for a Session whose tab was never opened reports that the tab must
+  be opened first instead of driving another Session's page.
+
 ## 1.1.0
 
 - Security: every HTTP route now runs behind

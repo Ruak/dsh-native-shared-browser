@@ -20,6 +20,27 @@ tool; the HTTP routes accept only this deployment's authenticated browser, so
 the security boundary is "this DSH profile's own page", not "any local
 process".
 
+## Session binding
+
+The right Sidebar is per Session: `@deepseek-ai/dsh-client-ui-sidebar-right`
+keeps one docking surface per Session id, and its navigation controller
+(`ctx.sidebarRight.openTab`) acts on the Session currently on screen. A page
+opened by an agent therefore has to name the Session that asked for it, or it
+lands in whichever panel the user happens to be looking at.
+
+The Host attaches the calling agent's Session (`exec.agent.id`) to every queued
+command. The client remembers the on-screen Session from
+`ctx.sidebarRight.mounted`; on `open` it selects `command.session` through
+`ctx.uiWorkspace.openSession` when that Session is not on screen, waits for the
+selection to settle, and only then opens the tab, so the tab lands in the
+panel's own Session surface. Each Session's tab body registers its
+`<webview>` under its Session id (the slot is session-scoped and receives
+`sessionId`), and later commands run against the webview of their own Session —
+mounted Sessions keep their page alive while the user views another one.
+
+A command for a Session whose tab was never opened fails with "call action
+`open` first" rather than touching another Session's page.
+
 ## Agent tool
 
 `native_shared_browser` queues one command and waits for the page to report it:
